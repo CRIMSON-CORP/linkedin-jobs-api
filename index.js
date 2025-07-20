@@ -109,14 +109,15 @@ Query.prototype.getRemoteFilter = function () {
 };
 
 Query.prototype.getSalary = function () {
-  const salaryRange = {
-    40000: "1",
-    60000: "2",
-    80000: "3",
-    100000: "4",
-    120000: "5",
-  };
-  return salaryRange[this.salary] || "";
+  const salary = this.salary;
+
+  if (salary <= 40000) return "1";
+  if (salary <= 60000) return "2";
+  if (salary <= 80000) return "3";
+  if (salary <= 100000) return "4";
+  if (salary <= 120000) return "5";
+
+  return ""; // or maybe "6+" if it's above all ranges
 };
 
 Query.prototype.getPage = function () {
