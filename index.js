@@ -125,27 +125,32 @@ Query.prototype.getPage = function () {
 };
 
 Query.prototype.url = function (start) {
-  let query = `https://${this.host}/jobs-guest/jobs/api/seeMoreJobPostings/search?`;
-
+  const query = `https://${this.host}/jobs-guest/jobs/api/seeMoreJobPostings/search?`;
   const params = new URLSearchParams();
+
+  const date = this.getDateSincePosted();
+  const salary = this.getSalary();
+  const exp = this.getExperienceLevel();
+  const remote = this.getRemoteFilter();
+  const jobType = this.getJobType();
+  const sort = this.sortBy;
 
   if (this.keyword) params.append("keywords", this.keyword);
   if (this.location) params.append("location", this.location);
-  if (this.getDateSincePosted())
-    params.append("f_TPR", this.getDateSincePosted());
-  if (this.getSalary()) params.append("f_SB2", this.getSalary());
-  if (this.getExperienceLevel())
-    params.append("f_E", this.getExperienceLevel());
-  if (this.getRemoteFilter()) params.append("f_WT", this.getRemoteFilter());
-  if (this.getJobType()) params.append("f_JT", this.getJobType());
+  if (date) params.append("f_TPR", date);
+  if (salary) params.append("f_SB2", salary);
+  if (exp) params.append("f_E", exp);
+  if (remote) params.append("f_WT", remote);
+  if (jobType) params.append("f_JT", jobType);
 
   params.append("start", start + this.getPage());
 
-  if (this.sortBy === "recent") params.append("sortBy", "DD");
-  else if (this.sortBy === "relevant") params.append("sortBy", "R");
+  if (sort === "recent") params.append("sortBy", "DD");
+  else if (sort === "relevant") params.append("sortBy", "R");
 
   return query + params.toString();
 };
+
 
 Query.prototype.getJobs = async function () {
   let allJobs = [];
