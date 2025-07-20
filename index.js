@@ -58,8 +58,8 @@ function Query(queryObj) {
   this.salary = queryObj.salary || "";
   this.experienceLevel = queryObj.experienceLevel || "";
   this.sortBy = queryObj.sortBy || "";
-  this.limit = Number(queryObj.limit) || 0;
-  this.page = Number(queryObj.page) || 0;
+  this.limit = +queryObj.limit || 0;
+  this.page = +queryObj.page || 0;
 }
 
 // Query prototype methods
