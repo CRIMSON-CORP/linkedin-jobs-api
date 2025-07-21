@@ -41,6 +41,11 @@ class JobCache {
 
 const cache = new JobCache();
 
+// Generate a unique cache key based on the query parameters
+Query.prototype.getCacheKey = function () {
+  return `${this.url(0)}_limit:${this.limit}`;
+};
+
 // Main query function
 module.exports.query = (queryObject) => {
   const query = new Query(queryObject);
@@ -60,6 +65,8 @@ function Query(queryObj) {
   this.sortBy = queryObj.sortBy || "";
   this.limit = +queryObj.limit || 0;
   this.page = +queryObj.page || 0;
+  this.has_verification = queryObj.has_verification || false;
+  this.under_10_applicants = queryObj.under_10_applicants || false;
 }
 
 // Query prototype methods
@@ -120,6 +127,14 @@ Query.prototype.getSalary = function () {
   return ""; // or maybe "6+" if it's above all ranges
 };
 
+Query.prototype.getHasVerification = function () {
+  return this.has_verification ? "true" : "false";
+};
+
+Query.prototype.getUnder10Applicants = function () {
+  return this.under_10_applicants ? "true" : "false";
+};
+
 Query.prototype.getPage = function () {
   return this.page * 25;
 };
@@ -133,6 +148,8 @@ Query.prototype.url = function (start) {
   const exp = this.getExperienceLevel();
   const remote = this.getRemoteFilter();
   const jobType = this.getJobType();
+  const verified = this.getHasVerification();
+  const under10 = this.getUnder10Applicants();
   const sort = this.sortBy;
 
   if (this.keyword) params.append("keywords", this.keyword);
@@ -142,6 +159,8 @@ Query.prototype.url = function (start) {
   if (exp) params.append("f_E", exp);
   if (remote) params.append("f_WT", remote);
   if (jobType) params.append("f_JT", jobType);
+  if (verified) params.append("f_VJ", verified);
+  if (under10) params.append("f_EA", under10);
 
   params.append("start", start + this.getPage());
 
@@ -152,6 +171,7 @@ Query.prototype.url = function (start) {
 };
 
 
+
 Query.prototype.getJobs = async function () {
   let allJobs = [];
   let start = 0;
@@ -159,10 +179,11 @@ Query.prototype.getJobs = async function () {
   let hasMore = true;
   let consecutiveErrors = 0;
   const MAX_CONSECUTIVE_ERRORS = 3;
-
+  console.log(this.url());
+  console.log(this.getCacheKey());
   try {
     // Check cache first
-    const cacheKey = this.url(0);
+    const cacheKey = this.getCacheKey();
     const cachedJobs = cache.get(cacheKey);
     if (cachedJobs) {
       console.log("Returning cached results");
@@ -211,7 +232,7 @@ Query.prototype.getJobs = async function () {
 
     // Cache results if we got any
     if (allJobs.length > 0) {
-      cache.set(this.url(0), allJobs);
+      cache.set(this.getCacheKey(), allJobs);
     }
 
     return allJobs;
